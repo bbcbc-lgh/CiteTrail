@@ -96,7 +96,7 @@ class SearchClient:
             response = await client.get(
                 "https://api.duckduckgo.com/",
                 params={"q": query, "format": "json", "no_html": 1, "skip_disambig": 1},
-                headers={"User-Agent": "DeepResearch/0.1"},
+                headers={"User-Agent": "CiteTrail/0.1"},
             )
             response.raise_for_status()
             payload = response.json()

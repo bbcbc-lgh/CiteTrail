@@ -83,7 +83,7 @@ function downloadReport() {
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
   anchor.href = url
-  anchor.download = '深度研究报告.md'
+  anchor.download = 'CiteTrail-研究报告.md'
   anchor.click()
   URL.revokeObjectURL(url)
 }
@@ -94,10 +94,10 @@ function downloadReport() {
   <main class="app-shell">
     <div class="app-frame">
       <header class="topbar">
-        <div class="brand" aria-label="深度研究助手">
+        <div class="brand" aria-label="CiteTrail 深度研究助手">
           <span class="brand-mark">研</span>
           <div class="brand-copy">
-            <strong>深度研究</strong>
+            <strong>CiteTrail</strong>
             <span>公开资料研究助手</span>
           </div>
         </div>

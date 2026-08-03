@@ -9,7 +9,7 @@ PROJECT_DIR = Path(__file__).resolve().parents[2]
 
 
 class Settings(BaseSettings):
-    app_name: str = "自动化深度研究智能体"
+    app_name: str = "CiteTrail"
     api_prefix: str = "/api"
     host: str = "127.0.0.1"
     port: int = 8000
