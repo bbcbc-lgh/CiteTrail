@@ -6,45 +6,44 @@ import ResearchPlan from './components/ResearchPlan.vue'
 import { useResearchStream } from './composables/useResearchStream'
 import type { ResearchEvent, ResearchTask, TaskSummary } from './types'
 
-const topic = ref('Datawhale 是什么样的组织？')
-const visible = ref(true)
+const exampleTopic = 'Datawhale 是如何组织开源学习社区并持续运营的？'
+const topic = ref('')
 const stage = ref('idle')
 const percentage = ref(0)
-const message = ref('输入一个开放主题，系统将规划、检索、总结并生成可追溯的报告。')
+const message = ref('准备好后，研究进展会显示在这里。')
 const tasks = ref<ResearchTask[]>([])
 const summaries = ref<TaskSummary[]>([])
 const activeTaskId = ref<string | null>(null)
 const sources = ref<Record<string, number>>({})
 const markdown = ref('')
-const logs = ref<string[]>([])
+const formError = ref('')
 const { isRunning, error, start, cancel } = useResearchStream()
 
 const completedTasks = computed(() => summaries.value.length)
-const status = computed(() => {
-  if (error.value) return '连接异常'
-  if (isRunning.value) return '研究中'
-  if (stage.value === 'completed') return '已完成'
-  return '等待开始'
+const sourceTotal = computed(() => Object.values(sources.value).reduce((total, count) => total + count, 0))
+const activeTask = computed(() => tasks.value.find((task) => task.id === activeTaskId.value))
+const connectionLabel = computed(() => {
+  if (error.value) return '研究服务连接异常'
+  if (isRunning.value) return '正在同步研究进展'
+  if (stage.value === 'completed') return '本轮研究已完成'
+  return '可以开始新研究'
 })
 
 function resetResult() {
   stage.value = 'planning'
   percentage.value = 0
-  message.value = '正在创建新的研究会话…'
+  message.value = '正在理解问题并准备研究计划…'
   tasks.value = []
   summaries.value = []
   activeTaskId.value = null
   sources.value = {}
   markdown.value = ''
-  logs.value = []
 }
 
 function handleEvent(event: ResearchEvent) {
   stage.value = event.stage || stage.value
   percentage.value = event.percentage ?? percentage.value
   message.value = event.text || message.value
-  logs.value.unshift(`${event.type}: ${event.text || ''}`)
-  logs.value = logs.value.slice(0, 8)
 
   if (event.type === 'plan') tasks.value = (event.data.tasks || []) as ResearchTask[]
   if (event.type === 'task_started') activeTaskId.value = (event.data.task as ResearchTask).id
@@ -61,12 +60,21 @@ function handleEvent(event: ResearchEvent) {
 }
 
 async function runResearch() {
-  if (topic.value.trim().length < 3) {
-    message.value = '研究主题至少需要 3 个字符。'
+  const normalizedTopic = topic.value.trim()
+  formError.value = ''
+
+  if (normalizedTopic.length < 3) {
+    formError.value = '请至少输入 3 个字符，让研究问题更具体一些。'
     return
   }
+
   resetResult()
-  await start(topic.value.trim(), handleEvent)
+  await start(normalizedTopic, handleEvent)
+}
+
+function useExampleTopic() {
+  topic.value = exampleTopic
+  formError.value = ''
 }
 
 function downloadReport() {
@@ -82,56 +90,118 @@ function downloadReport() {
 </script>
 
 <template>
+  <a class="skip-link" href="#research-form">跳到研究问题</a>
   <main class="app-shell">
-    <section class="hero">
-      <div class="brand"><span class="brand-mark">R</span><span>DEEP RESEARCH</span></div>
-      <p class="eyebrow">自动化深度研究智能体</p>
-      <h1>把开放问题变成<br /><em>可追溯的研究报告。</em></h1>
-      <p class="hero-copy">研究规划智能体负责拆解，SearchTool 采集证据，任务总结智能体提炼要点，报告生成智能体汇总为带来源的 Markdown 报告。</p>
-      <button class="primary" @click="visible = true">启动研究工作台 <span>→</span></button>
-    </section>
+    <div class="app-frame">
+      <header class="topbar">
+        <div class="brand" aria-label="深度研究助手">
+          <span class="brand-mark">研</span>
+          <div class="brand-copy">
+            <strong>深度研究</strong>
+            <span>公开资料研究助手</span>
+          </div>
+        </div>
+        <div class="topbar-status" role="status">
+          <span class="status-dot" :class="{ running: isRunning, done: stage === 'completed', failed: Boolean(error) }"></span>
+          <span>{{ connectionLabel }}</span>
+        </div>
+      </header>
 
-    <section class="architecture-strip">
-      <span>Vue 3</span><i>→</i><span>FastAPI + SSE</span><i>→</i><span>研究智能体</span><i>→</i><span>搜索与笔记工具</span>
-    </section>
+      <section class="page-intro" aria-labelledby="page-title">
+        <div class="intro-copy">
+          <p class="section-label">研究工作台</p>
+          <h1 id="page-title">把一个问题，<em>研究得更明白。</em></h1>
+          <p class="hero-copy">提出你真正想解决的问题。我们会拆分研究步骤、检索公开资料，并把结论与来源整理成一份便于核验的报告。</p>
+        </div>
+        <dl class="intro-facts" aria-label="研究输出说明">
+          <div>
+            <dt>研究过程</dt>
+            <dd>规划、检索、归纳</dd>
+          </div>
+          <div>
+            <dt>最终交付</dt>
+            <dd>结论、来源与 Markdown 报告</dd>
+          </div>
+        </dl>
+      </section>
 
-    <section v-if="visible" class="modal-overlay">
-      <div class="modal-container">
-        <header class="modal-header">
-          <div><span class="eyebrow">深度研究工作台</span><h2>深度研究工作台</h2></div>
-          <button class="icon-button" title="关闭工作台" @click="visible = false">×</button>
-        </header>
+      <section id="research-form" class="command-section" aria-labelledby="command-title">
+        <div class="command-heading">
+          <div>
+            <p class="section-label">开始研究</p>
+            <h2 id="command-title">你想弄清楚什么？</h2>
+            <p>尽量写明研究对象、关注范围，以及你希望回答的问题。</p>
+          </div>
+          <span class="character-count">{{ topic.length }} / 500</span>
+        </div>
 
         <form class="topic-form" @submit.prevent="runResearch">
-          <label for="topic">研究主题</label>
-          <div class="input-row">
-            <input id="topic" v-model="topic" :disabled="isRunning" placeholder="例如：Datawhale 是什么样的组织？" />
-            <button class="primary" :disabled="isRunning">{{ isRunning ? '研究进行中…' : '开始深度研究' }}</button>
-            <button v-if="isRunning" type="button" class="secondary" @click="cancel">停止</button>
+          <label class="sr-only" for="topic">研究问题</label>
+          <textarea
+            id="topic"
+            v-model="topic"
+            :disabled="isRunning"
+            :aria-invalid="Boolean(formError)"
+            aria-describedby="topic-help"
+            maxlength="500"
+            rows="3"
+            placeholder="例如：远程办公对小型研发团队的协作效率有哪些长期影响？"
+            @input="formError = ''"
+          ></textarea>
+          <div class="command-actions">
+            <button class="primary" type="submit" :disabled="isRunning">
+              <span>{{ isRunning ? '研究正在进行' : '生成研究计划' }}</span>
+              <span aria-hidden="true">→</span>
+            </button>
+            <button v-if="isRunning" type="button" class="secondary" @click="cancel">停止研究</button>
           </div>
         </form>
 
-        <ProgressBar :percentage="percentage" :stage="stage" :message="message" :task-count="tasks.length" :completed-tasks="completedTasks" />
-        <p v-if="error" class="error-banner">{{ error }}</p>
-
-        <div class="workspace-grid">
-          <ResearchPlan :tasks="tasks" :active-task-id="activeTaskId" :summaries="summaries" />
-          <section class="report-panel">
-            <div class="panel-title-row">
-              <div><span class="eyebrow">报告生成智能体</span><h2>研究报告</h2></div>
-              <button class="text-button" :disabled="!markdown" @click="downloadReport">下载 .md</button>
-            </div>
-            <MarkdownRenderer :markdown="markdown" />
-          </section>
+        <div id="topic-help" class="topic-help">
+          <span>没有想好具体写法？</span>
+          <button type="button" class="example-button" :disabled="isRunning" @click="useExampleTopic">使用示例问题</button>
         </div>
+        <p v-if="formError || error" class="error-banner" role="alert">{{ formError || error }}</p>
+      </section>
 
-        <footer class="modal-footer">
-          <span class="status-dot" :class="{ running: isRunning, done: stage === 'completed' }"></span>
-          <strong>{{ status }}</strong>
-          <span v-if="activeTaskId">· 当前任务已返回 {{ sources[activeTaskId] || 0 }} 条可引用来源</span>
-          <span v-else-if="logs.length">· {{ logs[0] }}</span>
-        </footer>
-      </div>
-    </section>
+      <ProgressBar
+        :percentage="percentage"
+        :stage="stage"
+        :message="message"
+        :task-count="tasks.length"
+        :completed-tasks="completedTasks"
+        :source-count="sourceTotal"
+      />
+
+      <section class="workspace-grid" aria-label="研究工作区">
+        <ResearchPlan :tasks="tasks" :active-task-id="activeTaskId" :summaries="summaries" :source-counts="sources" />
+
+        <section class="report-panel" aria-labelledby="report-title">
+          <header class="report-header">
+            <div>
+              <p class="section-label">研究结果</p>
+              <h2 id="report-title">研究报告</h2>
+            </div>
+            <div class="report-tools">
+              <span class="report-state" :class="{ ready: Boolean(markdown) }">{{ markdown ? '报告已生成' : '等待生成' }}</span>
+              <button class="download-button" :disabled="!markdown" @click="downloadReport">
+                <span aria-hidden="true">↓</span>
+                <span>下载 Markdown</span>
+              </button>
+            </div>
+          </header>
+
+          <div class="report-meta">
+            <template v-if="tasks.length">
+              <span>已整理 {{ completedTasks }} / {{ tasks.length }} 个步骤</span>
+              <span>找到 {{ sourceTotal }} 条可引用来源</span>
+              <span v-if="activeTask" class="report-current">正在处理：{{ activeTask.title }}</span>
+            </template>
+            <span v-else>提交问题后，报告会在研究过程中逐步生成。</span>
+          </div>
+          <MarkdownRenderer :markdown="markdown" />
+        </section>
+      </section>
+    </div>
   </main>
 </template>

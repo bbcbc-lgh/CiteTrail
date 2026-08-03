@@ -1,14 +1,14 @@
 from src.Agent.BaseAgent import BaseAgent
-from src.Agent.PromptTemplates import REPORT_WRITER_PROMPT
+from src.Agent.Prompts import REPORT_WRITER_PROMPT
 from src.Infrastructure.LLMClient import LLMClient
-from src.Schema.TaskSummary import TaskSummary
+from src.Schema.Summary import Summary
 
 
 class ReporterAgent(BaseAgent):
     def __init__(self, llm: LLMClient):
         super().__init__("报告生成智能体", llm, "你负责撰写简洁、证据可追溯的 Markdown 报告。")
 
-    async def generate(self, topic: str, summaries: list[TaskSummary]) -> str | None:
+    async def generate(self, topic: str, summaries: list[Summary]) -> str | None:
         if not self.is_configured:
             return None
         prompt = REPORT_WRITER_PROMPT.format(topic=topic, summaries=self._format_summaries(summaries))
@@ -19,7 +19,7 @@ class ReporterAgent(BaseAgent):
             return None
 
     @staticmethod
-    def _format_summaries(summaries: list[TaskSummary]) -> str:
+    def _format_summaries(summaries: list[Summary]) -> str:
         parts: list[str] = []
         for summary in summaries:
             source_lines = "\n".join(

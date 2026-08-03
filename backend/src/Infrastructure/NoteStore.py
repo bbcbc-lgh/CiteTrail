@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from src.Schema.TaskSummary import TaskSummary
+from src.Schema.Summary import Summary
 
 
 class NoteStore:
@@ -12,7 +12,7 @@ class NoteStore:
         self.notes_dir = notes_dir
         self.notes_dir.mkdir(parents=True, exist_ok=True)
 
-    def save_task_summary(self, research_id: str, summary: TaskSummary) -> Path:
+    def save_task_summary(self, research_id: str, summary: Summary) -> Path:
         file_path = self.notes_dir / f"{research_id}-{summary.task.id}.json"
         payload = {"research_id": research_id, "created_at": datetime.now(timezone.utc).isoformat(), "summary": summary.model_dump()}
         file_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")

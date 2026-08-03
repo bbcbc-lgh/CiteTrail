@@ -5,7 +5,7 @@ from uuid import uuid4
 from pydantic import BaseModel, Field
 
 
-class ResearchEvent(BaseModel):
+class Event(BaseModel):
     type: Literal["progress", "plan", "task_started", "search_results", "task_summary", "report", "error", "done"]
     research_id: str
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

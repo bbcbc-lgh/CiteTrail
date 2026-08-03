@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 import httpx
 
 from src.Infrastructure.Config import Settings
-from src.Infrastructure.Utils import truncate
+from src.Infrastructure.Tools import truncate
 from src.Schema.Source import Source
 
 

@@ -1,7 +1,9 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+
+from src.Schema.BaseRequest import BaseRequest
 
 
-class ResearchRequest(BaseModel):
+class ResearchRequest(BaseRequest):
     topic: str = Field(min_length=3, max_length=500, description="需要研究的主题。")
 
     @field_validator("topic")

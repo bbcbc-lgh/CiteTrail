@@ -15,7 +15,7 @@ function renderInline(value: string): string {
 }
 
 function renderMarkdown(value: string): string {
-  const fallback = '### 研究结果将在这里呈现\n\n提交一个主题后，系统会先展示研究计划，再流式更新各任务结论和最终 Markdown 报告。'
+  const fallback = '## 报告还没有生成\n\n研究开始后，结论和引用来源会随着各个步骤完成逐步整理到这里。'
   return (value || fallback).split(/\r?\n/).map((line) => {
     if (line.startsWith('### ')) return `<h3>${renderInline(line.slice(4))}</h3>`
     if (line.startsWith('## ')) return `<h2>${renderInline(line.slice(3))}</h2>`
@@ -31,5 +31,5 @@ const rendered = computed(() => renderMarkdown(props.markdown))
 </script>
 
 <template>
-  <article class="markdown-body" v-html="rendered"></article>
+  <article class="markdown-body" :class="{ 'is-empty': !markdown }" v-html="rendered"></article>
 </template>

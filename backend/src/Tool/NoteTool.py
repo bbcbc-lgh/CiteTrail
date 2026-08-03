@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from src.Infrastructure.NoteStore import NoteStore
-from src.Schema.TaskSummary import TaskSummary
+from src.Schema.Summary import Summary
 from src.Tool.BaseTool import BaseTool
 
 
@@ -12,7 +12,7 @@ class NoteTool(BaseTool):
     def __init__(self, store: NoteStore):
         self.store = store
 
-    def save_task_summary(self, research_id: str, summary: TaskSummary) -> Path:
+    def save_task_summary(self, research_id: str, summary: Summary) -> Path:
         return self.store.save_task_summary(research_id, summary)
 
     def save_report(self, research_id: str, markdown: str) -> Path:

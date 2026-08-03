@@ -9,10 +9,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
 from src.Infrastructure.Config import get_settings
-from src.Infrastructure.Utils import sse_message
-from src.Pipeline.ResearchPipeline import ResearchPipeline
+from src.Infrastructure.Tools import sse_message
 from src.Schema.HealthResponse import HealthResponse
 from src.Schema.ResearchRequest import ResearchRequest
+from src.WorkFlow.ResearchWorkFlow import ResearchWorkFlow
 
 settings = get_settings()
 logging.basicConfig(level=getattr(logging, settings.log_level.upper(), logging.INFO))
@@ -29,10 +29,10 @@ async def health() -> HealthResponse:
 @app.post(f"{settings.api_prefix}/research/stream")
 async def research_stream(request: ResearchRequest) -> StreamingResponse:
     """启动研究任务，并在每个流程节点发送具名 SSE 事件。"""
-    pipeline = ResearchPipeline(settings)
+    workflow = ResearchWorkFlow(settings)
 
     async def event_stream():
-        async for event in pipeline.research(request.topic):
+        async for event in workflow.research(request.topic):
             yield sse_message(event.type, event.model_dump(mode="json"))
 
     return StreamingResponse(event_stream(), media_type="text/event-stream", headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"})

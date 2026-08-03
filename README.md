@@ -14,7 +14,7 @@
   → SSE 事件流 → 研究工作台
 ```
 
-研究流程位于 `backend/src/Pipeline/ResearchPipeline.py`，负责规划、搜索、总结、报告和研究产物保存的编排。
+研究流程位于 `backend/src/WorkFlow/ResearchWorkFlow.py`，负责规划、搜索、总结、报告和研究产物保存的编排。
 
 ## 后端结构
 
@@ -22,13 +22,13 @@
 src/
 ├─ Agent/           Agent 基类与规划、总结、报告 Agent
 ├─ Tool/            搜索和笔记工具
-├─ Pipeline/        研究流程编排
+├─ WorkFlow/        研究流程编排
 ├─ Infrastructure/  模型、搜索、存储和配置适配器
 ├─ Schema/          Pydantic 数据契约
 └─ main.py          FastAPI 入口
 ```
 
-`Pipeline` 负责流程，`Agent` 负责推理，`Tool` 负责能力入口，`Infrastructure` 负责外部系统，`Schema` 只负责数据结构。
+`WorkFlow` 负责流程，`Agent` 负责推理，`Tool` 负责能力入口，`Infrastructure` 负责外部系统，`Schema` 只负责数据结构。
 
 ## 启动后端
 
@@ -37,7 +37,7 @@ src/
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -e .
+pip install -r requirements.txt
 uvicorn src.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
