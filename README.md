@@ -1,5 +1,7 @@
 # CiteTrail 自动化深度研究智能体
 
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
 CiteTrail 是一个独立的全栈深度研究应用。它将研究主题拆分为多个任务，搜索公开来源，提炼证据，并生成带引用的 Markdown 报告。研究过程通过 SSE 实时呈现在 Vue 前端。
 
 ## 研究流程
@@ -74,3 +76,7 @@ npm run dev
 ```
 
 接口返回 `text/event-stream`，事件类型包括 `progress`、`plan`、`task_started`、`search_results`、`task_summary`、`report`、`error` 和 `done`。最终报告与任务笔记保存至 `backend/workspace/`。
+
+## 许可证
+
+本项目基于 [MIT License](LICENSE) 开源。
