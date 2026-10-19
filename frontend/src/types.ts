@@ -20,7 +20,7 @@ export interface TaskSummary {
 }
 
 export interface ResearchEvent {
-  type: 'progress' | 'plan' | 'task_started' | 'search_results' | 'task_summary' | 'report' | 'error' | 'done'
+  type: 'progress' | 'plan' | 'task_started' | 'search_results' | 'task_summary' | 'report' | 'error' | 'done' | 'cancelled'
   research_id: string
   stage?: string
   percentage?: number

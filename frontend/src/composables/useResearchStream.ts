@@ -5,18 +5,20 @@ export function useResearchStream() {
   const isRunning = ref(false)
   const error = ref<string | null>(null)
   let controller: AbortController | undefined
+  let researchId: string | undefined
 
-  async function start(topic: string, onEvent: (event: ResearchEvent) => void) {
+  async function start(topic: string, onEvent: (event: ResearchEvent) => void, savedResearchId?: string) {
     controller?.abort()
     controller = new AbortController()
+    researchId = savedResearchId || crypto.randomUUID()
     isRunning.value = true
     error.value = null
 
     try {
-      const response = await fetch('/api/research/stream', {
+      const response = await fetch(savedResearchId ? `/api/research/${savedResearchId}/report` : '/api/research/stream', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
-        body: JSON.stringify({ topic }),
+        headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream', 'X-Research-ID': researchId },
+        body: savedResearchId ? undefined : JSON.stringify({ topic }),
         signal: controller.signal,
       })
       if (!response.ok || !response.body) {
@@ -37,6 +39,7 @@ export function useResearchStream() {
           if (!eventLine || !dataLine) continue
           try {
             const event = JSON.parse(dataLine.slice(5).trim()) as ResearchEvent
+            if (event.type === 'error') error.value = String(event.data.message || event.text || '研究失败')
             onEvent(event)
           } catch {
             // Ignore malformed keep-alive packets rather than breaking the UI.
@@ -53,10 +56,20 @@ export function useResearchStream() {
     }
   }
 
-  function cancel() {
+  async function cancel(): Promise<boolean> {
+    let stopped = false
+    if (researchId) {
+      try {
+        const response = await fetch(`/api/research/${researchId}/cancel`, { method: 'POST' })
+        stopped = response.ok
+      } catch {
+        stopped = false
+      }
+    }
     controller?.abort()
     controller = undefined
     isRunning.value = false
+    return stopped
   }
 
   return { isRunning, error, start, cancel }

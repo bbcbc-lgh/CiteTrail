@@ -14,17 +14,24 @@ const message = ref('准备好后，研究进展会显示在这里。')
 const tasks = ref<ResearchTask[]>([])
 const summaries = ref<TaskSummary[]>([])
 const activeTaskId = ref<string | null>(null)
-const sources = ref<Record<string, number>>({})
+const sources = ref<Record<string, string[]>>({})
 const markdown = ref('')
+const savedResearchId = ref('')
+const reportTopic = ref('')
+const reportDegraded = ref(false)
+const isRegenerating = ref(false)
 const formError = ref('')
+const degradedReasons = ref<string[]>([])
 const { isRunning, error, start, cancel } = useResearchStream()
 
 const completedTasks = computed(() => summaries.value.length)
-const sourceTotal = computed(() => Object.values(sources.value).reduce((total, count) => total + count, 0))
+const sourceTotal = computed(() => new Set(Object.values(sources.value).flat()).size)
+const sourceCounts = computed(() => Object.fromEntries(Object.entries(sources.value).map(([id, urls]) => [id, urls.length])))
 const activeTask = computed(() => tasks.value.find((task) => task.id === activeTaskId.value))
 const connectionLabel = computed(() => {
   if (error.value) return '研究服务连接异常'
   if (isRunning.value) return '正在同步研究进展'
+  if (stage.value === 'cancelled') return '研究已停止'
   if (stage.value === 'completed') return '本轮研究已完成'
   return '可以开始新研究'
 })
@@ -38,25 +45,45 @@ function resetResult() {
   activeTaskId.value = null
   sources.value = {}
   markdown.value = ''
+  degradedReasons.value = []
+  savedResearchId.value = ''
+  reportTopic.value = topic.value.trim()
+  reportDegraded.value = false
 }
 
 function handleEvent(event: ResearchEvent) {
   stage.value = event.stage || stage.value
   percentage.value = event.percentage ?? percentage.value
   message.value = event.text || message.value
+  if (event.data.degraded && typeof event.data.reason === 'string' && event.data.reason) {
+    degradedReasons.value = [...new Set([...degradedReasons.value, ...event.data.reason.split('；').filter(Boolean)])]
+  }
 
   if (event.type === 'plan') tasks.value = (event.data.tasks || []) as ResearchTask[]
   if (event.type === 'task_started') activeTaskId.value = (event.data.task as ResearchTask).id
   if (event.type === 'search_results') {
     const taskId = event.data.task_id as string
-    sources.value[taskId] = ((event.data.sources || []) as unknown[]).filter((item) => Boolean((item as { url?: string }).url)).length
+    sources.value[taskId] = [...new Set(((event.data.sources || []) as { url?: string }[]).map((item) => item.url).filter((url): url is string => Boolean(url)))]
   }
   if (event.type === 'task_summary') {
     const summary = event.data as unknown as TaskSummary
     summaries.value = [...summaries.value.filter((item) => item.task.id !== summary.task.id), summary]
   }
-  if (event.type === 'report') markdown.value = String(event.data.markdown || '')
+  if (event.type === 'report') {
+    markdown.value = String(event.data.markdown || '')
+    savedResearchId.value = event.research_id
+    reportDegraded.value = Boolean(event.data.degraded)
+    if (!reportDegraded.value) degradedReasons.value = []
+  }
+  if (event.type === 'cancelled') activeTaskId.value = null
   if (event.type === 'done') activeTaskId.value = null
+}
+
+async function stopResearch() {
+  const stopped = await cancel()
+  stage.value = 'cancelled'
+  activeTaskId.value = null
+  message.value = stopped ? '研究已停止，已完成内容已保留。' : '研究连接已关闭，但未能确认服务端停止。'
 }
 
 async function runResearch() {
@@ -72,6 +99,16 @@ async function runResearch() {
   await start(normalizedTopic, handleEvent)
 }
 
+async function regenerateReport() {
+  if (!savedResearchId.value) return
+  isRegenerating.value = true
+  try {
+    await start(reportTopic.value, handleEvent, savedResearchId.value)
+  } finally {
+    isRegenerating.value = false
+  }
+}
+
 function useExampleTopic() {
   topic.value = exampleTopic
   formError.value = ''
@@ -83,9 +120,12 @@ function downloadReport() {
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
   anchor.href = url
-  anchor.download = 'CiteTrail-研究报告.md'
+  const name = reportTopic.value.replace(/[<>:"/\\|?*\u0000-\u001f]/g, '-').slice(0, 60).replace(/[. ]+$/, '')
+  anchor.download = `CiteTrail-${name || '研究'}-${reportDegraded.value ? '证据摘要' : '研究报告'}.md`
+  document.body.appendChild(anchor)
   anchor.click()
-  URL.revokeObjectURL(url)
+  anchor.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 </script>
 
@@ -150,10 +190,10 @@ function downloadReport() {
           ></textarea>
           <div class="command-actions">
             <button class="primary" type="submit" :disabled="isRunning">
-              <span>{{ isRunning ? '研究正在进行' : '生成研究计划' }}</span>
+              <span>{{ isRunning ? isRegenerating ? '正在重新生成报告' : '研究正在进行' : '生成研究计划' }}</span>
               <span aria-hidden="true">→</span>
             </button>
-            <button v-if="isRunning" type="button" class="secondary" @click="cancel">停止研究</button>
+        <button v-if="isRunning && !isRegenerating" type="button" class="secondary" @click="stopResearch">停止研究</button>
           </div>
         </form>
 
@@ -162,6 +202,7 @@ function downloadReport() {
           <button type="button" class="example-button" :disabled="isRunning" @click="useExampleTopic">使用示例问题</button>
         </div>
         <p v-if="formError || error" class="error-banner" role="alert">{{ formError || error }}</p>
+        <p v-if="degradedReasons.length" class="warning-banner" role="status">本轮包含回退结果：{{ degradedReasons.join('；') }}。{{ reportDegraded ? '证据摘要尚未形成综合结论。' : '请核对输出状态和来源。' }}</p>
       </section>
 
       <ProgressBar
@@ -174,7 +215,7 @@ function downloadReport() {
       />
 
       <section class="workspace-grid" aria-label="研究工作区">
-        <ResearchPlan :tasks="tasks" :active-task-id="activeTaskId" :summaries="summaries" :source-counts="sources" />
+        <ResearchPlan :tasks="tasks" :active-task-id="activeTaskId" :summaries="summaries" :source-counts="sourceCounts" />
 
         <section class="report-panel" aria-labelledby="report-title">
           <header class="report-header">
@@ -183,7 +224,8 @@ function downloadReport() {
               <h2 id="report-title">研究报告</h2>
             </div>
             <div class="report-tools">
-              <span class="report-state" :class="{ ready: Boolean(markdown) }">{{ markdown ? '报告已生成' : '等待生成' }}</span>
+              <span class="report-state" :class="{ ready: Boolean(markdown) && !reportDegraded }">{{ markdown ? reportDegraded ? '证据摘要（回退）' : '报告已生成' : '等待生成' }}</span>
+              <button v-if="savedResearchId" class="download-button" :disabled="isRunning" @click="regenerateReport">重新生成报告</button>
               <button class="download-button" :disabled="!markdown" @click="downloadReport">
                 <span aria-hidden="true">↓</span>
                 <span>下载 Markdown</span>

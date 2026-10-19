@@ -14,6 +14,7 @@ const completedCount = computed(() => props.summaries.length)
 function taskState(task: ResearchTask): string {
   if (props.summaries.some((item) => item.task.id === task.id)) return '已完成'
   if (task.id === props.activeTaskId) return '研究中'
+  if (props.sourceCounts[task.id]) return '已停止'
   return '待开始'
 }
 </script>
@@ -36,7 +37,7 @@ function taskState(task: ResearchTask): string {
       <li
         v-for="(task, index) in tasks"
         :key="task.id"
-        :class="{ active: task.id === activeTaskId, complete: summaries.some((item) => item.task.id === task.id) }"
+        :class="{ active: task.id === activeTaskId, complete: summaries.some((item) => item.task.id === task.id), stopped: sourceCounts[task.id] && !summaries.some((item) => item.task.id === task.id) }"
         :aria-current="task.id === activeTaskId ? 'step' : undefined"
       >
         <span class="task-number">{{ String(index + 1).padStart(2, '0') }}</span>

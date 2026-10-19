@@ -40,7 +40,9 @@ def format_sources_for_prompt(sources: Iterable[dict[str, str]]) -> str:
         entries.append(
             f"[{index}] {source.get('title', '未命名来源')}\n"
             f"链接：{source.get('url', '')}\n"
-            f"摘要：{source.get('snippet', '')}"
+            f"来源类型：{source.get('source_type', 'article')}\n"
+            f"摘要：{source.get('snippet', '')}\n"
+            f"完整代码示例：{source.get('code', '')}"
         )
     return "\n\n".join(entries) or "未返回可用来源。"
 

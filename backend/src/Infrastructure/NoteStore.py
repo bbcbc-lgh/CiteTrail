@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -23,3 +24,13 @@ class NoteStore:
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(markdown, encoding="utf-8")
         return file_path
+
+    def save_evidence(self, research_id: str, topic: str, summaries: list[Summary]) -> None:
+        path = self.notes_dir / f"{research_id}-evidence.json"
+        path.write_text(json.dumps({"topic": topic, "summaries": [item.model_dump() for item in summaries]}, ensure_ascii=False), encoding="utf-8")
+
+    def load_evidence(self, research_id: str) -> tuple[str, list[Summary]]:
+        if not re.fullmatch(r"[A-Za-z0-9-]{1,80}", research_id):
+            raise FileNotFoundError("无效的研究编号")
+        payload = json.loads((self.notes_dir / f"{research_id}-evidence.json").read_text(encoding="utf-8"))
+        return payload["topic"], [Summary.model_validate(item) for item in payload["summaries"]]

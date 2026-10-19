@@ -425,6 +425,16 @@ a:focus-visible {
   font-size: 0.78rem;
 }
 
+.warning-banner {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--accent-hover);
+  color: var(--text-muted);
+  background: var(--surface);
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
 .progress-card {
   margin: 16px 40px 0;
   padding: 19px 22px 17px;

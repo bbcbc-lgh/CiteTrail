@@ -10,5 +10,5 @@ class SearchTool(BaseTool):
     def __init__(self, client: SearchClient):
         self.client = client
 
-    async def run(self, query: str) -> list[Source]:
-        return await self.client.search(query)
+    async def run(self, query: str, topic: str | None = None) -> list[Source]:
+        return await self.client.search(query, topic)

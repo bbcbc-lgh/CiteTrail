@@ -17,6 +17,7 @@ const currentStageIndex = computed(() => ({
   researching: 1,
   reporting: 2,
   completed: 3,
+  cancelled: -1,
   failed: -1,
 }[props.stage] ?? -1))
 
@@ -26,6 +27,7 @@ const stageLabel = computed(() => ({
   reporting: '正在汇总研究报告',
   completed: '本轮研究已完成',
   failed: '研究未能完成',
+  cancelled: '研究已停止',
 }[props.stage] || '等待开始研究'))
 
 function stageState(index: number): string {

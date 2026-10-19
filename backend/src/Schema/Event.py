@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 
 class Event(BaseModel):
-    type: Literal["progress", "plan", "task_started", "search_results", "task_summary", "report", "error", "done"]
+    type: Literal["progress", "plan", "task_started", "search_results", "task_summary", "report", "error", "done", "cancelled"]
     research_id: str
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     stage: str | None = None

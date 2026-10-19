@@ -1,9 +1,11 @@
 from urllib.parse import urlparse
+import re
 
 import httpx
 
 from src.Infrastructure.Config import Settings
 from src.Infrastructure.Tools import truncate
+from src.Infrastructure.Evidence import clean_source
 from src.Schema.Source import Source
 
 
@@ -15,13 +17,18 @@ class SearchClient:
     def __init__(self, settings: Settings):
         self.settings = settings
 
-    async def search(self, query: str) -> list[Source]:
+    async def search(self, query: str, topic: str | None = None) -> list[Source]:
         errors: list[str] = []
         for backend in self.backends():
             try:
                 results = await self._search_with(backend, query)
                 if results:
-                    return self._normalize(results, backend)
+                    normalized = self._normalize(results, backend)
+                    # Rank against the actual search query. The planner may translate
+                    # a Chinese topic into English terms before searching.
+                    relevant = self._rank_relevant(normalized, query)
+                    if relevant:
+                        return relevant[:self.settings.search_result_limit]
             except Exception as exc:
                 errors.append(f"{backend}: {exc}")
         return [
@@ -143,7 +150,39 @@ class SearchClient:
                 continue
             seen.add(key)
             title = truncate(source.title or urlparse(source.url).netloc or "未命名结果", 160)
-            normalized.append(Source(title=title, url=source.url, snippet=truncate(source.snippet, 700), provider=source.provider or provider))
-            if len(normalized) == self.settings.search_result_limit:
-                break
+            if urlparse(source.url).scheme not in {"http", "https"}:
+                continue
+            normalized.append(clean_source(source.model_copy(update={"title": title, "provider": source.provider or provider})))
         return normalized
+
+    @staticmethod
+    def _rank_relevant(sources: list[Source], query: str) -> list[Source]:
+        stopwords = {"the", "and", "for", "with", "how", "does", "what", "are", "is", "in", "of", "to", "a", "an", "on", "best", "practices", "practice", "用户体验", "用户验收"}
+        terms = set(re.findall(r"[a-z][a-z0-9+#.-]{1,}", query.lower())) - stopwords
+        chinese = set()
+        for phrase in re.findall(r"[\u4e00-\u9fff]+", query):
+            if phrase not in stopwords:
+                chinese.update(phrase[index:index + 2] for index in range(len(phrase) - 1))
+        scored = []
+        for source in sources:
+            text = f"{source.title} {source.snippet} {source.url}".lower()
+            latin_hits = sum(bool(re.search(r"(?<![a-z0-9])" + re.escape(term) + r"(?![a-z0-9])", text)) for term in terms)
+            chinese_hits = sum(term in text for term in chinese)
+            required_latin_hits = max(2, (len(terms) + 2) // 3)
+            if terms and latin_hits < required_latin_hits:
+                continue
+            if "fastapi" in terms and not re.search(r"(?<![a-z0-9])fastapi(?![a-z0-9])", text):
+                continue
+            if "sse" in terms and not re.search(r"(?<![a-z0-9])sse(?![a-z0-9])", text):
+                continue
+            if not terms and chinese and chinese_hits < max(1, len(chinese) // 4):
+                continue
+            if not terms and not chinese:
+                continue
+            # Mixed-language technical questions also need their intent, not just framework names.
+            intent = next((word for word in ("断线", "断连", "取消", "重连") if word in query), None)
+            if intent and not any(word in text for word in (intent, "disconnect", "cancel", "reconnect", "断开", "断连", "断线", "重连")):
+                continue
+            score = latin_hits + chinese_hits + (2 if source.source_type == "official" else -1 if source.source_type == "community" else 0)
+            scored.append((score, source))
+        return [source for _, source in sorted(scored, key=lambda item: item[0], reverse=True)]

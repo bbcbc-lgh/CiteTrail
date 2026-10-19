@@ -16,15 +16,30 @@ function renderInline(value: string): string {
 
 function renderMarkdown(value: string): string {
   const fallback = '## 报告还没有生成\n\n研究开始后，结论和引用来源会随着各个步骤完成逐步整理到这里。'
-  return (value || fallback).split(/\r?\n/).map((line) => {
-    if (line.startsWith('### ')) return `<h3>${renderInline(line.slice(4))}</h3>`
-    if (line.startsWith('## ')) return `<h2>${renderInline(line.slice(3))}</h2>`
-    if (line.startsWith('# ')) return `<h1>${renderInline(line.slice(2))}</h1>`
-    if (line.startsWith('- ')) return `<li>${renderInline(line.slice(2))}</li>`
-    if (/^\d+\. /.test(line)) return `<li>${renderInline(line.replace(/^\d+\. /, ''))}</li>`
-    if (!line.trim()) return '<br />'
-    return `<p>${renderInline(line)}</p>`
-  }).join('')
+  let inCode = false
+  let codeLines: string[] = []
+  const rendered: string[] = []
+  for (const line of (value || fallback).split(/\r?\n/)) {
+    if (line.startsWith('```')) {
+      if (inCode) rendered.push(`<pre><code>${escapeHtml(codeLines.join('\n'))}</code></pre>`)
+      codeLines = []
+      inCode = !inCode
+      continue
+    }
+    if (inCode) {
+      codeLines.push(line)
+      continue
+    }
+    if (line.startsWith('### ')) rendered.push(`<h3>${renderInline(line.slice(4))}</h3>`)
+    else if (line.startsWith('## ')) rendered.push(`<h2>${renderInline(line.slice(3))}</h2>`)
+    else if (line.startsWith('# ')) rendered.push(`<h1>${renderInline(line.slice(2))}</h1>`)
+    else if (line.startsWith('- ')) rendered.push(`<li>${renderInline(line.slice(2))}</li>`)
+    else if (/^\d+\. /.test(line)) rendered.push(`<li>${renderInline(line.replace(/^\d+\. /, ''))}</li>`)
+    else if (!line.trim()) rendered.push('<br />')
+    else rendered.push(`<p>${renderInline(line)}</p>`)
+  }
+  if (codeLines.length) rendered.push(`<pre><code>${escapeHtml(codeLines.join('\n'))}</code></pre>`)
+  return rendered.join('')
 }
 
 const rendered = computed(() => renderMarkdown(props.markdown))

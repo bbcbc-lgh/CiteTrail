@@ -20,15 +20,20 @@ class ReporterAgent(BaseAgent):
 
     @staticmethod
     def _format_summaries(summaries: list[Summary]) -> str:
+        source_index: dict[str, int] = {}
+        next_number = 1
         parts: list[str] = []
         for summary in summaries:
-            source_lines = "\n".join(
-                f"- {source.title}: {source.url}\n  {source.snippet}" for source in summary.sources
-            ) or "- 没有可用来源"
+            source_lines: list[str] = []
+            for source in summary.sources:
+                if source.url not in source_index:
+                    source_index[source.url] = next_number
+                    next_number += 1
+                source_lines.append(f"- [{source_index[source.url]}] {source.title}: {source.url}\n  来源类型：{source.source_type}\n  {source.snippet}\n{source.code}")
             parts.append(
                 f"### {summary.task.title}\n任务目标：{summary.task.intent}\n"
                 f"总结：{summary.summary}\n关键要点：\n"
                 + "\n".join(f"- {point}" for point in summary.key_points)
-                + f"\n来源：\n{source_lines}"
+                + "\n来源：\n" + "\n".join(source_lines or ["- 没有可用来源"])
             )
         return "\n\n".join(parts)
