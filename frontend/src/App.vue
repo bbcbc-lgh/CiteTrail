@@ -3,8 +3,9 @@ import { computed, ref } from 'vue'
 import MarkdownRenderer from './components/MarkdownRenderer.vue'
 import ProgressBar from './components/ProgressBar.vue'
 import ResearchPlan from './components/ResearchPlan.vue'
+import EvidencePanel from './components/EvidencePanel.vue'
 import { useResearchStream } from './composables/useResearchStream'
-import type { ResearchEvent, ResearchTask, TaskSummary } from './types'
+import type { Citation, ResearchEvent, ResearchTask, TaskSummary } from './types'
 
 const exampleTopic = 'Datawhale 是如何组织开源学习社区并持续运营的？'
 const topic = ref('')
@@ -13,9 +14,10 @@ const percentage = ref(0)
 const message = ref('准备好后，研究进展会显示在这里。')
 const tasks = ref<ResearchTask[]>([])
 const summaries = ref<TaskSummary[]>([])
-const activeTaskId = ref<string | null>(null)
+const activeTaskIds = ref<string[]>([])
 const sources = ref<Record<string, string[]>>({})
 const markdown = ref('')
+const citations = ref<Citation[]>([])
 const savedResearchId = ref('')
 const reportTopic = ref('')
 const reportDegraded = ref(false)
@@ -27,7 +29,15 @@ const { isRunning, error, start, cancel } = useResearchStream()
 const completedTasks = computed(() => summaries.value.length)
 const sourceTotal = computed(() => new Set(Object.values(sources.value).flat()).size)
 const sourceCounts = computed(() => Object.fromEntries(Object.entries(sources.value).map(([id, urls]) => [id, urls.length])))
-const activeTask = computed(() => tasks.value.find((task) => task.id === activeTaskId.value))
+const claimCounts = computed(() => Object.fromEntries(summaries.value.map((item) => [item.task.id, item.claims.length])))
+const claimTotal = computed(() => summaries.value.reduce((total, item) => total + item.claims.length, 0))
+const citedClaimTotal = computed(
+  () => summaries.value.reduce((total, item) => total + item.claims.filter((claim) => claim.cited_source_ids.length > 0).length, 0),
+)
+const verifiedClaimTotal = computed(
+  () => summaries.value.reduce((total, item) => total + item.claims.filter((claim) => claim.support_score !== null).length, 0),
+)
+const activeTasks = computed(() => tasks.value.filter((task) => activeTaskIds.value.includes(task.id)))
 const connectionLabel = computed(() => {
   if (error.value) return '研究服务连接异常'
   if (isRunning.value) return '正在同步研究进展'
@@ -42,9 +52,10 @@ function resetResult() {
   message.value = '正在理解问题并准备研究计划…'
   tasks.value = []
   summaries.value = []
-  activeTaskId.value = null
+  activeTaskIds.value = []
   sources.value = {}
   markdown.value = ''
+  citations.value = []
   degradedReasons.value = []
   savedResearchId.value = ''
   reportTopic.value = topic.value.trim()
@@ -60,29 +71,39 @@ function handleEvent(event: ResearchEvent) {
   }
 
   if (event.type === 'plan') tasks.value = (event.data.tasks || []) as ResearchTask[]
-  if (event.type === 'task_started') activeTaskId.value = (event.data.task as ResearchTask).id
+  if (event.type === 'task_started') {
+    const started = (event.data.task as ResearchTask).id
+    if (!activeTaskIds.value.includes(started)) activeTaskIds.value = [...activeTaskIds.value, started]
+  }
   if (event.type === 'search_results') {
     const taskId = event.data.task_id as string
     sources.value[taskId] = [...new Set(((event.data.sources || []) as { url?: string }[]).map((item) => item.url).filter((url): url is string => Boolean(url)))]
   }
   if (event.type === 'task_summary') {
     const summary = event.data as unknown as TaskSummary
-    summaries.value = [...summaries.value.filter((item) => item.task.id !== summary.task.id), summary]
+    activeTaskIds.value = activeTaskIds.value.filter((id) => id !== summary.task.id)
+    // Claims are the citation-bearing part of a summary; never let a malformed
+    // payload break the whole stream renderer.
+    summaries.value = [
+      ...summaries.value.filter((item) => item.task.id !== summary.task.id),
+      { ...summary, claims: Array.isArray(summary.claims) ? summary.claims : [] },
+    ]
   }
   if (event.type === 'report') {
     markdown.value = String(event.data.markdown || '')
+    citations.value = Array.isArray(event.data.citations) ? (event.data.citations as Citation[]) : []
     savedResearchId.value = event.research_id
     reportDegraded.value = Boolean(event.data.degraded)
     if (!reportDegraded.value) degradedReasons.value = []
   }
-  if (event.type === 'cancelled') activeTaskId.value = null
-  if (event.type === 'done') activeTaskId.value = null
+  if (event.type === 'cancelled') activeTaskIds.value = []
+  if (event.type === 'done') activeTaskIds.value = []
 }
 
 async function stopResearch() {
   const stopped = await cancel()
   stage.value = 'cancelled'
-  activeTaskId.value = null
+  activeTaskIds.value = []
   message.value = stopped ? '研究已停止，已完成内容已保留。' : '研究连接已关闭，但未能确认服务端停止。'
 }
 
@@ -215,7 +236,7 @@ function downloadReport() {
       />
 
       <section class="workspace-grid" aria-label="研究工作区">
-        <ResearchPlan :tasks="tasks" :active-task-id="activeTaskId" :summaries="summaries" :source-counts="sourceCounts" />
+        <ResearchPlan :tasks="tasks" :active-task-ids="activeTaskIds" :summaries="summaries" :source-counts="sourceCounts" :claim-counts="claimCounts" />
 
         <section class="report-panel" aria-labelledby="report-title">
           <header class="report-header">
@@ -237,13 +258,16 @@ function downloadReport() {
             <template v-if="tasks.length">
               <span>已整理 {{ completedTasks }} / {{ tasks.length }} 个步骤</span>
               <span>找到 {{ sourceTotal }} 条可引用来源</span>
-              <span v-if="activeTask" class="report-current">正在处理：{{ activeTask.title }}</span>
+              <span v-if="claimTotal">整理出 {{ claimTotal }} 条结论，其中 {{ citedClaimTotal }} 条已标注来源<template v-if="verifiedClaimTotal">，{{ verifiedClaimTotal }} 条已核验支撑度</template></span>
+              <span v-if="activeTasks.length" class="report-current">正在处理：{{ activeTasks.map((item) => item.title).join('、') }}</span>
             </template>
             <span v-else>提交问题后，报告会在研究过程中逐步生成。</span>
           </div>
           <MarkdownRenderer :markdown="markdown" />
         </section>
       </section>
+
+      <EvidencePanel :summaries="summaries" :citations="citations" />
     </div>
   </main>
 </template>

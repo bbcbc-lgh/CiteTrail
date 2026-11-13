@@ -1,8 +1,8 @@
 import unittest
 
+from src.Infrastructure.Config import Settings
 from src.Infrastructure.Evidence import clean_source
 from src.Infrastructure.SearchClient import SearchClient
-from src.Infrastructure.Config import Settings
 from src.Schema.Source import Source
 from src.Schema.Summary import Summary
 from src.Schema.Task import Task
@@ -25,16 +25,36 @@ class EvidenceTest(unittest.TestCase):
         self.assertIn("const stream", result.code)
         self.assertNotIn("broken", result.code)
 
-    def test_rank_requires_topic_framework_and_intent(self):
+    def test_ranking_treats_every_domain_identically(self):
+        def build(topic_word: str, noise_word: str) -> list[Source]:
+            return [
+                Source(title=f"{noise_word} unrelated post", url=f"https://example.com/{noise_word}"),
+                Source(title=f"{topic_word} handling guide", url=f"https://example.com/{topic_word}"),
+            ]
+
+        # The ranker must not know any framework name. The same shape must rank
+        # the same way whatever the subject happens to be.
+        for topic_word, noise_word in (("FastAPI", "gardening"), ("Kubernetes", "baking")):
+            sources = build(topic_word, noise_word)
+            self.assertEqual(
+                SearchClient._rank_relevant(sources, f"{topic_word} 实践"),
+                [sources[1]],
+                msg=f"{topic_word} 的排序结果与其他领域不一致",
+            )
+
+    def test_ranking_keeps_relevant_alternatives_instead_of_dropping_them(self):
         sources = [
             Source(title="SSE reconnect in Spring Boot", url="https://example.com/spring"),
-            Source(title="FastAPI SSE introduction", url="https://example.com/intro"),
-            Source(title="FastAPI SSE disconnect cleanup", url="https://fastapi.tiangolo.com/sse", source_type="official"),
-            Source(title="FastAPI SSE disconnect discussion", url="https://github.com/x/y/issues/1", source_type="community"),
+            Source(
+                title="FastAPI SSE disconnect cleanup",
+                url="https://fastapi.tiangolo.com/sse",
+                source_type="official",
+            ),
         ]
         result = SearchClient._rank_relevant(sources, "FastAPI SSE 断线处理实践")
-        self.assertEqual(result, sources[2:])
-        self.assertEqual(SearchClient._rank_relevant(sources[:2], "FastAPI SSE 断线处理实践"), [])
+        # Official documentation ranks first, but a competing framework's page is
+        # still useful evidence and must not be silently removed.
+        self.assertEqual(result, [sources[1], sources[0]])
 
     def test_fallback_has_direct_citations_deduplicates_and_marks_gaps(self):
         source = clean_source(Source(title="[Bug] cleanup", url="https://github.com/x/y/issues/1", snippet="SSE disconnect cleanup releases resources promptly."))

@@ -6,17 +6,38 @@ export interface ResearchTask {
 }
 
 export interface Source {
+  id: string
   title: string
   url: string
-  snippet: string
-  provider: string
+  domain?: string
+  snippet?: string
+  provider?: string
+  source_type?: 'official' | 'article' | 'community'
+  code?: string
+}
+
+export interface Claim {
+  id: string
+  text: string
+  cited_source_ids: string[]
+  cited_chunk_ids: string[]
+  support_score: number | null
+  support_reason?: string | null
 }
 
 export interface TaskSummary {
   task: ResearchTask
   summary: string
-  key_points: string[]
+  claims: Claim[]
   sources: Source[]
+}
+
+export interface Citation {
+  index: number
+  source_id: string
+  title: string
+  url: string
+  claim_ids: string[]
 }
 
 export interface ResearchEvent {

@@ -1,16 +1,20 @@
-﻿"""暴露流式研究流程的 FastAPI 应用。"""
+"""暴露流式研究流程的 FastAPI 应用。"""
 
 from __future__ import annotations
 
 import asyncio
 import logging
-
-from fastapi import FastAPI, Header, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from pathlib import Path
 from uuid import uuid4
 
+from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+
 from src.Infrastructure.Config import get_settings
+from src.Infrastructure.LLM import LLMClient
+from src.Infrastructure.RunRepository import SqliteRunRepository
+from src.Infrastructure.SearchClient import SearchClient
 from src.Infrastructure.Tools import sse_message
 from src.Schema.HealthResponse import HealthResponse
 from src.Schema.ResearchRequest import ResearchRequest
@@ -26,7 +30,16 @@ app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origin_list, allo
 
 @app.get("/health", response_model=HealthResponse)
 async def health() -> HealthResponse:
-    return HealthResponse(status="正常", llm_configured=settings.has_llm, search_backend=settings.search_api)
+    """Report configuration *and* what the configured model can actually do."""
+    capabilities = LLMClient(settings).capabilities
+    return HealthResponse(
+        status="正常",
+        llm_configured=settings.has_llm,
+        llm_model=capabilities.model_id,
+        llm_capabilities=capabilities.as_dict(),
+        search_backend=settings.search_api,
+        search_backends=SearchClient(settings).available_backends(),
+    )
 
 
 @app.post(f"{settings.api_prefix}/research/stream")
@@ -65,3 +78,35 @@ async def regenerate_report(research_id: str) -> StreamingResponse:
             yield sse_message(event.type, event.model_dump(mode="json"))
 
     return StreamingResponse(event_stream(), media_type="text/event-stream", headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"})
+
+
+def get_run_repository() -> SqliteRunRepository:
+    """Separate seam so tests can point at a temporary database."""
+    return SqliteRunRepository(settings.workspace_dir / "runs.db")
+
+
+@app.get(f"{settings.api_prefix}/research")
+def list_research(limit: int = 50, repository: SqliteRunRepository = Depends(get_run_repository)) -> list[dict]:
+    """History index, newest first."""
+    return [run.as_dict() for run in repository.list(limit)]
+
+
+@app.get(f"{settings.api_prefix}/research/{{research_id}}")
+def get_research(research_id: str, repository: SqliteRunRepository = Depends(get_run_repository)) -> dict:
+    """One run plus its saved report, so a reload can restore the page."""
+    run = repository.get(research_id)
+    if run is None:
+        raise HTTPException(status_code=404, detail="研究不存在")
+    payload = run.as_dict()
+    payload["markdown"] = _read_report(run.report_path)
+    return payload
+
+
+def _read_report(report_path: str) -> str:
+    if not report_path:
+        return ""
+    path = Path(report_path)
+    try:
+        return path.read_text(encoding="utf-8") if path.is_file() else ""
+    except OSError:
+        return ""

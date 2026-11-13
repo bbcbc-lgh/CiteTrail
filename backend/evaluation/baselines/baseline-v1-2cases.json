@@ -1,0 +1,896 @@
+{
+  "generated_at": "2026-11-13T05:01:47.111960+00:00",
+  "model": {
+    "id": "deepseek-flash",
+    "base_url": "https://api.deepseek.com",
+    "capabilities": {
+      "model_id": "deepseek-flash",
+      "supports_json_schema": false,
+      "supports_tool_calling": true,
+      "supports_streaming": true,
+      "supports_temperature": true,
+      "is_reasoning": false,
+      "context_window": 32000,
+      "max_output_tokens": 4096
+    }
+  },
+  "search_backend": "tavily",
+  "max_tasks": 4,
+  "thresholds": {
+    "support": 0.35,
+    "point": 0.6,
+    "semantic": 0.5
+  },
+  "aggregate": {
+    "cases": 2,
+    "degraded_excluded": 0,
+    "failed": 0,
+    "groundedness": 0.8264,
+    "citation_precision": 0.8264,
+    "cited_claim_rate": 1.0,
+    "measurable_rate": 0.9267,
+    "coverage": 0.75,
+    "citation_recall": 0.5,
+    "total_prompt_tokens": 36157,
+    "total_completion_tokens": 71321,
+    "mean_duration_s": 209.7
+  },
+  "cases": [
+    {
+      "id": "zh-tech-sse",
+      "topic": "SSE 长连接断线后应如何设计与实现重连机制？",
+      "language": "zh",
+      "domain": "software",
+      "report_chars": 7752,
+      "degraded": false,
+      "error": null,
+      "duration_s": 203.8,
+      "tokens": {
+        "llm_calls": 14,
+        "prompt_tokens": 18695,
+        "completion_tokens": 36324
+      },
+      "capabilities": {
+        "model_id": "deepseek-flash",
+        "supports_json_schema": false,
+        "supports_tool_calling": true,
+        "supports_streaming": true,
+        "supports_temperature": true,
+        "is_reasoning": false,
+        "context_window": 32000,
+        "max_output_tokens": 4096
+      },
+      "metrics": {
+        "claims": 51,
+        "cited_claims": 51,
+        "measurable_claims": 47,
+        "semantic_claims": 45,
+        "supported_claims": 41,
+        "groundedness": 0.8723,
+        "citation_precision": 0.8723,
+        "cited_claim_rate": 1.0,
+        "measurable_rate": 0.9216,
+        "coverage": 0.75,
+        "citation_recall": 0.5,
+        "matched_points": [
+          "心跳",
+          "Last-Event-ID",
+          "指数退避"
+        ],
+        "missing_points": [
+          "资源释放"
+        ],
+        "claim_details": [
+          {
+            "text": "EventSource 会自动建立持久连接，并在连接断开时自动重连。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "自动重连具有可调的重连超时。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "重连时，浏览器 EventSource 会在 Last-Event-ID 请求头中发送最后收到的事件 ID。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "设置事件的 id 值会使 EventSource 的 lastEventId 属性更新为该值。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "服务端可依据 Last-Event-ID 重发后续消息。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "HTML 标准将 Last-Event-ID 描述为基本可为任意 UTF-8 编码字符串，但不得包含 U+0000 NULL、U+000A LF 或 U+000D CR。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "HTML 标准指出 Last-Event-ID 的值空间仍需通过 issue 7363 更好地定义。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "SSE 事件流的 MIME 类型是 text/event-stream。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "SSE 事件可包含 id、event、data 和 retry 字段，空行会派发组装好的事件。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "EventSource 通过 readyState 属性暴露当前状态。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "在 HTML 标准的 fail the connection 流程中，用户代理会排队任务，在 readyState 不是 CLOSED 时将其设为 CLOSED 并触发 error 事件。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.3,
+            "supported": false
+          },
+          {
+            "text": "一篇测试文章将正确的重连契约表述为：下一次连接应标识最后已完整处理的事件，并由服务器按文档化的重放策略恢复。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.3,
+            "supported": false
+          },
+          {
+            "text": "一篇社区资料表示服务器应使用 Last-Event-ID 从正确位置恢复事件流。",
+            "cited": true,
+            "measurable": false,
+            "method": "lexical",
+            "support": null,
+            "supported": false
+          },
+          {
+            "text": "一篇文章称重连时间由实现决定，通常为几秒钟。",
+            "cited": true,
+            "measurable": false,
+            "method": "lexical",
+            "support": null,
+            "supported": false
+          },
+          {
+            "text": "浏览器在 SSE 重连时会回传此前存储的 Last-Event-ID。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "SSE 事件的 id 字段会被浏览器 EventSource API 存储，并在重连时作为 Last-Event-ID 发送。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "服务端可利用 Last-Event-ID 在缓冲区中定位后续事件并从该位置继续发送。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "Galaxy 文档称重连后服务端会重放自该时间点以来的聚合 notification_status。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "Galaxy 文档称历史更新在 payload 中带有 update_time 游标，客户端可据此请求增量。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "重放边界策略存在差异：通常重放严格晚于 Last-Event-ID 的事件，也有系统包含边界并依赖消费端去重。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "重放边界属于应用策略，不能替代文档说明。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "测试应固定所选重放边界规则并验证首个返回的 ID。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "严格续传测试应在游标附近构造事件，并断言所提供 ID 缺席而后继事件出现。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "EventSource 在连接丢失后会自动尝试重连，并采用指数退避策略。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "SSE 客户端重连时会在请求头中发送最后收到的事件 ID（Last-Event-ID）。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "Last-Event-ID 允许服务器从客户端断开处恢复流。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "SSE 在网络协议层会保持连接为“incomplete”状态。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "SSE 连接会随着事件发生持续追加新的 chunks。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "SSE 没有用于确认的返回路径。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "在 SSE 上实现确认需要应用层自行构建。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "在 SSE 上实现消息 ID 需要应用层自行构建。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "服务器需要追踪每个客户端已确认的内容，并在重连后重发其余内容。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "每个客户端需要代码来丢弃重复项。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "SSE 将排序保证留给应用层处理。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.0,
+            "supported": false
+          },
+          {
+            "text": "SSE 将去重保证留给应用层处理。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "来源[2]指出SSE的浏览器端重连会采用服务器设置的重试延迟。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "来源[2]指出SSE重连会携带Last-Event-ID。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "来源[2]指出服务器保留短事件缓冲时，SSE可据此无缺口恢复事件流。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "来源[2]指出原始WebSocket关闭后需要应用层进行指数退避重连。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.6,
+            "supported": true
+          },
+          {
+            "text": "来源[2]指出原始WebSocket关闭后需要遗漏消息恢复。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "来源[2]指出长轮询保持的请求在规模下会像推送一样消耗服务器容量。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "来源[2]指出长轮询还承担逐消息重连开销。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "来源[2]称长轮询只作为回退层级。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.3,
+            "supported": false
+          },
+          {
+            "text": "来源[2]指出所有推送传输都需要代理配合。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.0,
+            "supported": false
+          },
+          {
+            "text": "来源[1]指出WebSocket是有状态传输。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "来源[1]指出WebSocket没有内置重连逻辑。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "来源[1]指出某些限制性企业代理和深度包检测防火墙可能阻断WebSocket协议。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "来源[1]描述服务器超时机制：若超时窗口内无事件，服务器发送204 No Content或类似响应，客户端重连。",
+            "cited": true,
+            "measurable": true,
+            "method": "lexical",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "来源[1]称该超时机制可防止僵尸连接。",
+            "cited": true,
+            "measurable": false,
+            "method": "lexical",
+            "support": null,
+            "supported": false
+          },
+          {
+            "text": "来源[1]称该超时机制有助于兼容会修剪空闲连接的代理。",
+            "cited": true,
+            "measurable": false,
+            "method": "lexical",
+            "support": null,
+            "supported": false
+          },
+          {
+            "text": "来源[3]将长轮询3.43%、SSE0.99%、WebSocket0.91%列为网络流量测试结果。",
+            "cited": true,
+            "measurable": true,
+            "method": "lexical",
+            "support": 0.0,
+            "supported": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "zh-general-four-day",
+      "topic": "四天工作制的实际效果有哪些证据？",
+      "language": "zh",
+      "domain": "management",
+      "report_chars": 5293,
+      "degraded": false,
+      "error": null,
+      "duration_s": 215.6,
+      "tokens": {
+        "llm_calls": 14,
+        "prompt_tokens": 17462,
+        "completion_tokens": 34997
+      },
+      "capabilities": {
+        "model_id": "deepseek-flash",
+        "supports_json_schema": false,
+        "supports_tool_calling": true,
+        "supports_streaming": true,
+        "supports_temperature": true,
+        "is_reasoning": false,
+        "context_window": 32000,
+        "max_output_tokens": 4096
+      },
+      "metrics": {
+        "claims": 44,
+        "cited_claims": 44,
+        "measurable_claims": 41,
+        "semantic_claims": 41,
+        "supported_claims": 32,
+        "groundedness": 0.7805,
+        "citation_precision": 0.7805,
+        "cited_claim_rate": 1.0,
+        "measurable_rate": 0.9318,
+        "coverage": 0.75,
+        "citation_recall": 0.5,
+        "matched_points": [
+          "生产率",
+          "员工福祉",
+          "试点"
+        ],
+        "missing_points": [
+          "人员留存"
+        ],
+        "claim_details": [
+          {
+            "text": "“四天工作制”可指把全职日程安排在四天而非五天。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "该术语涵盖压缩工时制和减少工时制两种常被混淆的安排。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "压缩工时制通常仍工作约40小时，只是分布在四个更长工作日。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "减少工时制通常将工作时间降至约32小时并保持薪酬不变。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "近期试点和媒体报道中的四天工作制多指减少工时版本。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.3,
+            "supported": false
+          },
+          {
+            "text": "减少工时制常采用100-80-100模型：100%薪酬、80%时间、至少100%生产率。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "压缩工时制中的4/10模式让员工四个10小时工作日获得全薪。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.3,
+            "supported": false
+          },
+          {
+            "text": "冰岛试验虽以四天工作周为名，但属于减少工时，从40小时降至35或36小时，不一定是压缩到四天。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.6,
+            "supported": true
+          },
+          {
+            "text": "雇主采用压缩工时制还是减少工时制，会改变成本、法律问题和结果。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "并非所有四天工作制相同：有些压缩40小时到四天，有些减少周工时但提供全薪和福利。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "压缩工时系统综述摘要提到减少通勤等拟议好处。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "该系统综述指出，区分哪些研究真正研究压缩工时制存在困难。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "提供的摘要没有给出福祉、留任与公平性的直接效果证据。",
+            "cited": true,
+            "measurable": false,
+            "method": "lexical",
+            "support": null,
+            "supported": false
+          },
+          {
+            "text": "据[4]，一项为期六个月、覆盖六国的试验报告职业倦怠下降、工作满意度提高、身心健康改善，且未损害企业绩效。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "[4]称该试验为迄今规模最大的缩短工时随机对照试验，并称其追踪141家公司的2,896名员工。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.6,
+            "supported": true
+          },
+          {
+            "text": "[3]报告Fan等将141家组织的2,896名员工与12家对照公司比较，干预组织的倦怠、工作满意度和自评身心健康改善，而对照公司未出现这一模式。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.6,
+            "supported": true
+          },
+          {
+            "text": "[3]认为福祉方面的证据范围更广、方法学更强。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "[2]报告英国试点结束时约39%的参与者压力下降，并将变化与更多时间用于就医、家庭照护和休息联系起来。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "[2]报告英国试点中管理者重新分配低价值任务并执行会议纪律的地方，压力下降最明显。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "[2]报告英国试点期间参与企业的自愿离职率相较此前基线下降约57%。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "[2]报告员工将更好的工作生活平衡和更清晰边界列为留下的原因。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.0,
+            "supported": false
+          },
+          {
+            "text": "[2]报告管理者在试点中报告空缺岗位减少和招聘流动降低。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.0,
+            "supported": false
+          },
+          {
+            "text": "[1]指出，同意参加四天工作制试验的公司可能已有些证据表明该安排适合自身业务，因此现有研究存在选择偏差。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "[1]指出仍需大型随机对照试验等更强证据，并更仔细考察缺勤率和生产率。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "[1]报告多数企业领导在试验结束时高度满意，许多企业看到留任和招聘改善、病假时间节省及收入增长。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.0,
+            "supported": false
+          },
+          {
+            "text": "[3]报告瑞典一项公共部门受控干预将每周工时减少四分之一且工资不变。",
+            "cited": true,
+            "measurable": false,
+            "method": "lexical",
+            "support": null,
+            "supported": false
+          },
+          {
+            "text": "[4]报告在调整排班的同时重新设计工作流程的公司效果最强。",
+            "cited": true,
+            "measurable": false,
+            "method": "lexical",
+            "support": null,
+            "supported": false
+          },
+          {
+            "text": "一份由4 Day Week Global与波士顿学院、都柏林大学学院和剑桥大学研究者参与的全球研究摘要称，参与试验的33家企业和903名员工中，多数不太可能回到标准五天工作制。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "该摘要称参与企业多数位于美国和爱尔兰，试验也在英国、日本、冰岛、西班牙和新西兰进行。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "该摘要援引CNBC称，新加坡、越南、泰国、菲律宾和印度尼西亚对四天工作制持开放态度，并称该概念在欧洲相当流行。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.0,
+            "supported": false
+          },
+          {
+            "text": "Business Insider摘要称，来自冰岛、日本和菲律宾试验的越来越多研究表明，在压缩周工时下员工倦怠感更低，生产率通常持平甚至提高。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "Business Insider摘要称，微软日本2019年8月试行四天工作制时，生产率较上年同月上升40%。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "维基百科摘要称，冰岛2015至2019年两项试验将2500名员工的工作时间降至每周35小时且不降薪，员工幸福感、工作生活平衡和压力评分显著改善。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "维基百科摘要称，由Autonomy智库及波士顿学院、剑桥大学和牛津大学研究者组织的4 Day Week Global试验涉及61家企业和近3000名员工。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.3,
+            "supported": false
+          },
+          {
+            "text": "该摘要称，试验结果显示英国采用四天工作制的公司中超过90%将继续实行。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.0,
+            "supported": false
+          },
+          {
+            "text": "提供的摘要对4 Day Week Global相关试验给出不同规模（33家/903人与61家/近3000人），且未说明是否为不同批次或不同范围。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.3,
+            "supported": false
+          },
+          {
+            "text": "来源[1]中关于微软日本生产率上升的表述在摘要中不完整。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "来源称，有证据表明四天工作制在特定情况下会增加劳动力成本，且结果不一。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "来源认为，在运营成本压力下增加劳动力成本对企业不具吸引力，这构成实施四天工作制的一项潜在约束。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.6,
+            "supported": true
+          },
+          {
+            "text": "来源指出，对四天工作制的某些担忧并未被现有证据证实，但这种偏见可能给推行新制度带来问题。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.6,
+            "supported": true
+          },
+          {
+            "text": "来源仅将 Citizens Advice Gateshead, UK 列为示例，所给摘要未说明该案例的具体结果。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "所给来源没有提供不同行业、岗位或员工群体中异质性效果的细分证据。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "所给来源没有提供关于排班约束、客户服务压力或长期可持续性的直接证据。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 1.0,
+            "supported": true
+          },
+          {
+            "text": "该来源为文章类型，摘要未给出研究设计、样本规模或长期追踪数据。",
+            "cited": true,
+            "measurable": true,
+            "method": "semantic",
+            "support": 0.6,
+            "supported": true
+          }
+        ]
+      }
+    }
+  ]
+}

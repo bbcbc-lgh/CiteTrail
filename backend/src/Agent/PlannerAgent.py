@@ -2,8 +2,8 @@ from datetime import date
 
 from src.Agent.BaseAgent import BaseAgent
 from src.Agent.Prompts import TODO_PLANNER_PROMPT
-from src.Infrastructure.Tools import parse_json_object
-from src.Infrastructure.LLMClient import LLMClient
+from src.Agent.Schemas import PLAN_SCHEMA
+from src.Infrastructure.LLM import LLMClient
 from src.Schema.Task import Task
 
 
@@ -17,12 +17,8 @@ class PlannerAgent(BaseAgent):
         prompt = TODO_PLANNER_PROMPT.format(
             current_date=date.today().isoformat(), topic=topic, task_count=task_count
         )
-        try:
-            response = await self.run(prompt)
-            payload = parse_json_object(response) or {}
-            return self._validate_tasks(payload.get("tasks"), task_count)
-        except Exception:
-            return []
+        payload = await self.run_json(prompt, schema=PLAN_SCHEMA) or {}
+        return self._validate_tasks(payload.get("tasks"), task_count)
 
     @staticmethod
     def _validate_tasks(raw_tasks: object, task_count: int) -> list[Task]:

@@ -20,6 +20,9 @@ dist/
 # Runtime output
 workspace/
 
+# Local work products (review notes, plans, scratch analysis)
+outputs/
+
 # Editors and operating systems
 .idea/
 .vscode/

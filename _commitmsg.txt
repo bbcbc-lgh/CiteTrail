@@ -1,0 +1,30 @@
+﻿feat: 多引擎融合检索与可核验证据链
+
+检索
+- 接入博查、智谱、百度千帆、DeepSeek、秘塔五个国内后端，替换失效的
+  DuckDuckGo / Perplexity / SearXNG
+- 融合模式并行查询、按 URL 去重合并，同一页面被多个索引命中时提升排序
+- 排序加入 IDF 加权、单域名上限与同标题去重
+
+证据
+- 全文抓取（trafilatura）+ 切块 + 按查询选块，替代原先 700 字摘要上限
+- 支持搜索 API 直出正文（DeepSeek need_content），跳过二次抓取
+- 引用核查智能体为每条结论打支撑度分，低支撑结论在报告中标注
+
+流程
+- 子任务并发执行（TASK_CONCURRENCY），事件经队列回流保持 SSE 语义
+- 证据不足时触发补检循环（MAX_WEB_RESEARCH_LOOPS）
+- 四层链路追踪，每轮导出 traces JSON
+
+工程
+- 运行历史入库（SQLite），新增 GET /api/research 列表与详情接口
+- 评测集 24 条 + 指标 + 基线工具
+- ruff 配置与 GitHub Actions（评测仅手动触发）
+- MCP server 暴露 search_web / list_research / get_report
+
+前端
+- 结论与来源面板：支撑度徽章、来源编号跳转
+- 报告正文 [n] 转为锚点链接（代码块内不转换）
+- 多任务并发进度展示
+
+测试 119 → 146

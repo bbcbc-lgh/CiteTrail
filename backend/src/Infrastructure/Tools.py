@@ -3,6 +3,36 @@ import re
 from collections.abc import Iterable
 from typing import Any
 
+LATIN_TERM = re.compile(r"[a-z][a-z0-9+#.-]{1,}")
+CJK_RUN = re.compile(r"[\u4e00-\u9fff]+")
+
+# Function words only. Domain vocabulary must never live here.
+TERM_STOPWORDS = frozenset({
+    "the", "and", "for", "with", "how", "does", "what", "why", "when", "which",
+    "are", "is", "was", "were", "in", "of", "to", "a", "an", "on", "at", "by",
+    "be", "that", "this", "it", "as", "from", "or", "not", "do", "can", "should",
+})
+
+
+def lexical_terms(text: str) -> set[str]:
+    """Latin words plus CJK bigrams, minus function words.
+
+    One shared term model for anything that needs to compare a query against a
+    body of text. ``SearchClient`` keeps its own split version on purpose: it
+    needs separate latin/CJK coverage ratios to handle mixed-language queries.
+    """
+    lowered = (text or "").lower()
+    latin = {term for term in LATIN_TERM.findall(lowered) if term not in TERM_STOPWORDS}
+    cjk = {run[index:index + 2] for run in CJK_RUN.findall(lowered) for index in range(len(run) - 1)}
+    return latin | cjk
+
+
+def term_present(term: str, lowered_text: str) -> bool:
+    """Latin terms match on word boundaries; CJK terms match as substrings."""
+    if term.isascii():
+        return re.search(r"(?<![a-z0-9])" + re.escape(term) + r"(?![a-z0-9])", lowered_text) is not None
+    return term in lowered_text
+
 
 def parse_json_object(text: str) -> dict[str, Any] | None:
     candidate = text.strip()
@@ -37,11 +67,13 @@ def truncate(value: str, limit: int) -> str:
 def format_sources_for_prompt(sources: Iterable[dict[str, str]]) -> str:
     entries = []
     for index, source in enumerate(sources, start=1):
+        evidence = (source.get("excerpt") or source.get("snippet") or "").strip()
+        kind = "正文摘录" if source.get("excerpt") else "搜索摘要"
         entries.append(
             f"[{index}] {source.get('title', '未命名来源')}\n"
             f"链接：{source.get('url', '')}\n"
             f"来源类型：{source.get('source_type', 'article')}\n"
-            f"摘要：{source.get('snippet', '')}\n"
+            f"{kind}：{evidence}\n"
             f"完整代码示例：{source.get('code', '')}"
         )
     return "\n\n".join(entries) or "未返回可用来源。"

@@ -1,0 +1,174 @@
+{
+  "version": 2,
+  "description": "CiteTrail 评测集（中文用户场景）。每条为一个真实中文研究问题，expected_points 是人工标注的“应覆盖要点”。技术类主题会大量检索到英文来源，因此这里同时覆盖“中文结论引用英文证据”的跨语言情形，这也是引用核查必须存在的原因。",
+  "cases": [
+    {
+      "id": "zh-tech-sse",
+      "language": "zh",
+      "domain": "software",
+      "topic": "SSE 长连接断线后应如何设计与实现重连机制？",
+      "expected_points": ["心跳", "Last-Event-ID", "指数退避", "资源释放"]
+    },
+    {
+      "id": "zh-tech-pgmvcc",
+      "language": "zh",
+      "domain": "database",
+      "topic": "PostgreSQL 的 MVCC 是如何处理事务隔离与并发冲突的？",
+      "expected_points": ["多版本", "快照", "事务 ID", "垃圾回收"]
+    },
+    {
+      "id": "zh-tech-hpa",
+      "language": "zh",
+      "domain": "infrastructure",
+      "topic": "Kubernetes HPA 的扩缩容决策依据与常见配置陷阱是什么？",
+      "expected_points": ["指标采集", "冷却时间", "资源请求", "自定义指标"]
+    },
+    {
+      "id": "zh-tech-rag-chunk",
+      "language": "zh",
+      "domain": "ai",
+      "topic": "RAG 系统中文档切块策略如何影响检索质量？",
+      "expected_points": ["切块大小", "重叠", "语义边界", "元数据"]
+    },
+    {
+      "id": "zh-tech-injection",
+      "language": "zh",
+      "domain": "security",
+      "topic": "大模型应用的提示注入攻击有哪些典型手法与防御手段？",
+      "expected_points": ["指令覆盖", "不可信输入", "权限隔离", "输出过滤"]
+    },
+    {
+      "id": "zh-tech-vector",
+      "language": "zh",
+      "domain": "ai",
+      "topic": "向量数据库的索引类型如何在召回率与延迟之间权衡？",
+      "expected_points": ["HNSW", "IVF", "量化", "召回率"]
+    },
+    {
+      "id": "zh-tech-mcp",
+      "language": "zh",
+      "domain": "ai",
+      "topic": "Model Context Protocol 是如何标准化 AI 智能体与工具的集成的？",
+      "expected_points": ["JSON-RPC", "工具", "资源", "宿主"]
+    },
+    {
+      "id": "zh-tech-otel",
+      "language": "zh",
+      "domain": "infrastructure",
+      "topic": "OpenTelemetry 是如何在多个服务之间传递分布式追踪上下文的？",
+      "expected_points": ["追踪上下文", "span", "传播", "采样"]
+    },
+    {
+      "id": "zh-tech-llm-eval",
+      "language": "zh",
+      "domain": "ai",
+      "topic": "生产环境中应该如何评估大模型的输出质量？",
+      "expected_points": ["评测集", "人工复核", "指标", "回归"]
+    },
+    {
+      "id": "zh-tech-rsc",
+      "language": "zh",
+      "domain": "frontend",
+      "topic": "React Server Components 是什么，它解决的是什么问题？",
+      "expected_points": ["服务端渲染", "传输体积", "水合", "数据获取"]
+    },
+    {
+      "id": "zh-tech-wasm",
+      "language": "zh",
+      "domain": "software",
+      "topic": "在浏览器之外运行 WebAssembly 有哪些取舍？",
+      "expected_points": ["沙箱", "可移植性", "启动时间", "运行时"]
+    },
+    {
+      "id": "zh-tech-partial-index",
+      "language": "zh",
+      "domain": "database",
+      "topic": "数据库什么时候应该使用部分索引而不是完整索引？",
+      "expected_points": ["选择性", "写入开销", "查询条件", "存储"]
+    },
+    {
+      "id": "zh-general-remote",
+      "language": "zh",
+      "domain": "management",
+      "topic": "远程办公对小型研发团队的协作效率有哪些长期影响？",
+      "expected_points": ["沟通成本", "知识共享", "异步协作", "团队信任"]
+    },
+    {
+      "id": "zh-general-rooftop",
+      "language": "zh",
+      "domain": "agriculture",
+      "topic": "城市屋顶农业的实际经济效益与推广障碍是什么？",
+      "expected_points": ["初期投入", "产量", "承重", "政策支持"]
+    },
+    {
+      "id": "zh-general-coding-edu",
+      "language": "zh",
+      "domain": "education",
+      "topic": "中小学编程教育的实际效果与主要争议有哪些？",
+      "expected_points": ["计算思维", "师资", "课时", "学习兴趣"]
+    },
+    {
+      "id": "zh-general-prepared-food",
+      "language": "zh",
+      "domain": "food",
+      "topic": "预制菜行业的增长动力与消费者接受度现状如何？",
+      "expected_points": ["供应链", "标准化", "食品安全", "消费习惯"]
+    },
+    {
+      "id": "zh-general-aging",
+      "language": "zh",
+      "domain": "healthcare",
+      "topic": "人口老龄化对社区养老服务体系提出了哪些新要求？",
+      "expected_points": ["居家养老", "护理人力", "支付能力", "医养结合"]
+    },
+    {
+      "id": "zh-general-battery",
+      "language": "zh",
+      "domain": "energy",
+      "topic": "动力电池回收产业的现状与主要技术路线是什么？",
+      "expected_points": ["梯次利用", "湿法冶金", "回收率", "处理成本"]
+    },
+    {
+      "id": "zh-general-four-day",
+      "language": "zh",
+      "domain": "management",
+      "topic": "四天工作制的实际效果有哪些证据？",
+      "expected_points": ["生产率", "员工福祉", "人员留存", "试点"]
+    },
+    {
+      "id": "zh-general-urban-heat",
+      "language": "zh",
+      "domain": "environment",
+      "topic": "缓解城市热岛效应最有效的措施有哪些？",
+      "expected_points": ["树冠覆盖", "反射材料", "屋顶绿化", "通风"]
+    },
+    {
+      "id": "zh-general-microplastics",
+      "language": "zh",
+      "domain": "healthcare",
+      "topic": "微塑料的主要来源与健康风险是什么？",
+      "expected_points": ["纺织品", "轮胎", "摄入", "暴露"]
+    },
+    {
+      "id": "zh-general-sleep",
+      "language": "zh",
+      "domain": "healthcare",
+      "topic": "睡眠时长如何影响认知表现？",
+      "expected_points": ["记忆巩固", "注意力", "记忆", "睡眠不足"]
+    },
+    {
+      "id": "zh-general-vertical-farm",
+      "language": "zh",
+      "domain": "agriculture",
+      "topic": "垂直农业的经济限制有哪些？",
+      "expected_points": ["能耗成本", "照明", "作物选择", "规模"]
+    },
+    {
+      "id": "zh-general-datacenter",
+      "language": "zh",
+      "domain": "environment",
+      "topic": "数据中心如何降低碳排放？",
+      "expected_points": ["可再生能源", "PUE", "散热", "选址"]
+    }
+  ]
+}

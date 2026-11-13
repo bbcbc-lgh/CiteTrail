@@ -1,6 +1,7 @@
 from src.Agent.BaseAgent import BaseAgent
 from src.Agent.Prompts import REPORT_WRITER_PROMPT
-from src.Infrastructure.LLMClient import LLMClient
+from src.Infrastructure.Citations import build_citation_index, renumber_markers
+from src.Infrastructure.LLM import LLMClient
 from src.Schema.Summary import Summary
 
 
@@ -20,20 +21,38 @@ class ReporterAgent(BaseAgent):
 
     @staticmethod
     def _format_summaries(summaries: list[Summary]) -> str:
-        source_index: dict[str, int] = {}
-        next_number = 1
+        citations = build_citation_index(summaries)
+        number_of = {citation.source_id: citation.index for citation in citations}
         parts: list[str] = []
         for summary in summaries:
             source_lines: list[str] = []
             for source in summary.sources:
-                if source.url not in source_index:
-                    source_index[source.url] = next_number
-                    next_number += 1
-                source_lines.append(f"- [{source_index[source.url]}] {source.title}: {source.url}\n  来源类型：{source.source_type}\n  {source.snippet}\n{source.code}")
+                number = number_of.get(source.id)
+                if number is None:
+                    continue
+                source_lines.append(
+                    f"- [{number}] {source.title}: {source.url}\n"
+                    f"  来源类型：{source.source_type}\n  {source.snippet}\n{source.code}"
+                )
+            claim_lines: list[str] = []
+            # Claims were written against this task's own numbering; rewrite them
+            # so every marker in the prompt means the same source everywhere.
+            local_to_global = {
+                index: number_of[source.id]
+                for index, source in enumerate(summary.sources, start=1)
+                if source.id in number_of
+            }
+            for claim in summary.claims:
+                text = renumber_markers(claim.text, local_to_global)
+                markers = [f"[{number_of[sid]}]" for sid in claim.cited_source_ids if sid in number_of]
+                suffix = f"（引用 {' '.join(markers)}）" if markers else ""
+                if claim.support_score is not None and claim.support_score < 0.5:
+                    suffix += "（证据支持较弱，表述需谨慎）"
+                claim_lines.append(f"- {text}{suffix}")
             parts.append(
                 f"### {summary.task.title}\n任务目标：{summary.task.intent}\n"
                 f"总结：{summary.summary}\n关键要点：\n"
-                + "\n".join(f"- {point}" for point in summary.key_points)
+                + "\n".join(claim_lines or ["- 没有可用要点"])
                 + "\n来源：\n" + "\n".join(source_lines or ["- 没有可用来源"])
             )
         return "\n\n".join(parts)

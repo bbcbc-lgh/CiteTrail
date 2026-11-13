@@ -4,16 +4,17 @@ import type { ResearchTask, TaskSummary } from '../types'
 
 const props = defineProps<{
   tasks: ResearchTask[]
-  activeTaskId: string | null
+  activeTaskIds: string[]
   summaries: TaskSummary[]
   sourceCounts: Record<string, number>
+  claimCounts: Record<string, number>
 }>()
 
 const completedCount = computed(() => props.summaries.length)
 
 function taskState(task: ResearchTask): string {
   if (props.summaries.some((item) => item.task.id === task.id)) return '已完成'
-  if (task.id === props.activeTaskId) return '研究中'
+  if (props.activeTaskIds.includes(task.id)) return '研究中'
   if (props.sourceCounts[task.id]) return '已停止'
   return '待开始'
 }
@@ -37,8 +38,8 @@ function taskState(task: ResearchTask): string {
       <li
         v-for="(task, index) in tasks"
         :key="task.id"
-        :class="{ active: task.id === activeTaskId, complete: summaries.some((item) => item.task.id === task.id), stopped: sourceCounts[task.id] && !summaries.some((item) => item.task.id === task.id) }"
-        :aria-current="task.id === activeTaskId ? 'step' : undefined"
+        :class="{ active: activeTaskIds.includes(task.id), complete: summaries.some((item) => item.task.id === task.id), stopped: sourceCounts[task.id] && !summaries.some((item) => item.task.id === task.id) }"
+        :aria-current="activeTaskIds.includes(task.id) ? 'step' : undefined"
       >
         <span class="task-number">{{ String(index + 1).padStart(2, '0') }}</span>
         <div class="task-content">
@@ -51,7 +52,9 @@ function taskState(task: ResearchTask): string {
             <span>检索关键词</span>
             <code>{{ task.query }}</code>
           </div>
-          <span v-if="sourceCounts[task.id]" class="task-source">已找到 {{ sourceCounts[task.id] }} 条来源</span>
+          <span v-if="sourceCounts[task.id]" class="task-source">
+            已找到 {{ sourceCounts[task.id] }} 条来源<template v-if="claimCounts[task.id]"> · {{ claimCounts[task.id] }} 条结论</template>
+          </span>
         </div>
       </li>
     </ol>

@@ -1,15 +1,25 @@
 import asyncio
+import logging
 import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
+
 from src.Infrastructure.Config import Settings
-from src.Infrastructure.LLMClient import LLMClient
+from src.Infrastructure.LLM import LLMClient
 from src.Schema.Source import Source
 from src.Schema.Summary import Summary
 from src.Schema.Task import Task
 from src.WorkFlow.ResearchWorkFlow import ResearchWorkFlow
+
+
+def setUpModule() -> None:
+    logging.disable(logging.CRITICAL)
+
+
+def tearDownModule() -> None:
+    logging.disable(logging.NOTSET)
 
 
 class ResearchWorkflowTest(unittest.IsolatedAsyncioTestCase):

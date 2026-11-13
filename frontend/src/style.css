@@ -1151,3 +1151,130 @@ a:focus-visible {
     animation-duration: 0.01ms !important;
   }
 }
+
+/* ---- 引用核查面板 ---- */
+
+.evidence-panel {
+  margin-top: 32px;
+  padding: 28px 32px 32px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--line, #dcd7cc);
+  border-radius: 16px;
+}
+
+.evidence-task + .evidence-task {
+  margin-top: 24px;
+}
+
+.evidence-task h3,
+.reference-block h3 {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.claim-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.claim {
+  padding: 12px 14px;
+  border: 1px solid var(--line, #dcd7cc);
+  border-left-width: 3px;
+  border-radius: 10px;
+  background: #fbfaf7;
+}
+
+.claim.strong { border-left-color: #4b8b5a; }
+.claim.partial { border-left-color: #c99a2e; }
+.claim.weak { border-left-color: #c25b4a; }
+.claim.unchecked { border-left-color: #b3ada1; }
+
+.claim-text {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--ink, #2b2b2b);
+}
+
+.claim-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.78rem;
+}
+
+.claim-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #ece9e2;
+  color: #514b40;
+  white-space: nowrap;
+}
+
+.claim.weak .claim-badge { background: #f6e2dd; color: #8f3527; }
+.claim.strong .claim-badge { background: #e2efe4; color: #2f5f3b; }
+
+.claim-ref {
+  padding: 2px 7px;
+  border: 1px solid var(--line, #dcd7cc);
+  border-radius: 6px;
+  background: #fff;
+  color: #3d5a80;
+  font: inherit;
+  cursor: pointer;
+}
+
+.claim-ref:hover { background: #eef2f8; }
+
+.claim-noref { color: #8a8275; }
+
+.claim-reason {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  color: #8f3527;
+}
+
+.reference-block {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line, #dcd7cc);
+}
+
+.reference-list {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+.reference-list li {
+  display: flex;
+  gap: 8px;
+  scroll-margin-top: 80px;
+}
+
+.reference-index { color: #8a8275; }
+
+.reference-list a { color: #3d5a80; }
+
+.citation-ref {
+  margin: 0 1px;
+  padding: 0 3px;
+  font-size: 0.75em;
+  vertical-align: super;
+  line-height: 0;
+  color: #3d5a80;
+  text-decoration: none;
+  border-radius: 4px;
+  background: #eef2f8;
+}
+
+.citation-ref:hover { background: #dde6f2; }

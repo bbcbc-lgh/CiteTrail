@@ -1,0 +1,16 @@
+[tool.ruff]
+target-version = "py310"
+line-length = 160
+src = ["."]
+
+[tool.ruff.lint]
+# E/F/W catch real mistakes; I keeps imports sorted. Line length is left out on
+# purpose — some of the SSE payload builders are genuinely long single lines.
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E402"]
+
+[tool.ruff.format]
+quote-style = "double"
